@@ -1,24 +1,34 @@
-import { AnomalyRepository } from '../../domain/repositories/AnomalyRepository';
+// src/features/anomalies/data/repositories_impl/AnomalyRepositoryImpl.ts
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IAnomalyRepository } from '../../domain/repositories/IAnomalyRepository';
 import { Anomaly } from '../../domain/entities/Anomaly';
-import { AnomalyLocalDataSource } from '../datasources/AnomalyLocalDataSource';
 
-export class AnomalyRepositoryImpl implements AnomalyRepository {
-  async getAll(): Promise<Anomaly[]> {
-    return AnomalyLocalDataSource.getAll();
+const STORAGE_KEY = '@anomalies_storage';
+
+export class AnomalyRepositoryImpl implements IAnomalyRepository {
+  
+  async loadAnomaliesLocally(): Promise<Anomaly[]> {
+    const json = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!json) return [];
+    return JSON.parse(json) as Anomaly[];
   }
 
-  async getById(id: string): Promise<Anomaly | null> {
-    const all = await this.getAll();
-    return all.find(a => a.id === id) || null;
+  async saveAnomaliesLocally(anomalies: Anomaly[]): Promise<void> {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(anomalies));
   }
 
-  async add(anomaly: Anomaly): Promise<void> {
-    const all = await this.getAll();
-    await AnomalyLocalDataSource.saveAll([...all, anomaly]);
-  }
-
+  // Aquí el método sync
   async sync(): Promise<void> {
-    // Simula sincronización desde una API falsa
-    console.log('Sync: Sincronizando con API...');
+    // Ejemplo de sincronización ficticia:
+    // - Carga local
+    const localAnomalies = await this.loadAnomaliesLocally();
+
+    // - Aquí podrías hacer sincronización con API real o simulada,
+    //   pero como solo tienes local, simplemente puedes actualizar la persistencia.
+    //   Por ejemplo, si tienes una API, la llamarías acá para enviar datos o recibir actualizados.
+
+    // Como ejemplo, vamos a "sincronizar" volviendo a guardar localmente:
+    await this.saveAnomaliesLocally(localAnomalies);
   }
 }

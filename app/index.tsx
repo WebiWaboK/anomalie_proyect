@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   FlatList,
   Text,
@@ -10,13 +10,15 @@ import {
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '../src/state/store';
-import { useAnomalySync } from '../src/features/anomalies/hooks/useAnomalySync';
+import { useLoadAnomalies } from '../src/features/anomalies/hooks/useLoadAnomalies';
+import { useSaveAnomalies } from '../src/features/anomalies/hooks/useSaveAnomalies';
 
 export default function HomeScreen() {
   const router = useRouter();
   const anomalies = useSelector((state: RootState) => state.anomalies.list);
 
-  useAnomalySync(); // Sincroniza al cargar
+  useLoadAnomalies();
+  useSaveAnomalies();
 
   const renderItem = ({ item }: { item: typeof anomalies[number] }) => (
     <TouchableOpacity
@@ -43,8 +45,12 @@ export default function HomeScreen() {
         data={anomalies}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.empty}>No hay anomalías registradas</Text>}
-        contentContainerStyle={anomalies.length === 0 ? styles.centerEmpty : undefined}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No hay anomalías registradas</Text>
+        }
+        contentContainerStyle={
+          anomalies.length === 0 ? styles.centerEmpty : undefined
+        }
       />
     </View>
   );
